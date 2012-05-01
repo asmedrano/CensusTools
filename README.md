@@ -2,7 +2,7 @@
 #### This mainly is for my use so its not all packaged nicely. Maybe a better starting point than an actually use full package.
 
 
-### acs_geo_file_reader
+## acs_geo_file_reader
 Helps you work with this type of geography file: http://www2.census.gov/acs2010_5yr/summaryfile/2006-2010_ACSSF_By_State_By_Sequence_Table_Subset/RhodeIsland/Tracts_Block_Groups_Only/g20105ri.csv
 
 ##### Example Usage

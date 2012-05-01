@@ -7,19 +7,22 @@ import re
 Summary Level Definitions
 Defined as:
 SUMLEV: (Geographies, Hierarchy)
+
+The 3rd value is where the Geographic Area code is in the CSV Rows.
+
 """
 SUMLEV = {
 	'010':('United States', 'United States',),
 	'020':('Region',),
 	'030':('Division',),
-	'040':('State','State',),
-	'050':('County','State-County',),
-	'060':('County Subdivision', 'State-County-County-Subdivision',),
+	'040':('State','State',9),
+	'050':('County','State-County',10),
+	'060':('County Subdivision', 'State-County-County-Subdivision',11),
 	'067':('Subminor Civil Division','State-County-County Subdivision-Subminor Civil Division',),
-	'070':('Place/Remainder', 'State-County-County Subdivision-Place/Remainder',),
-	'080':('Census Tract','State-County-County Subdivision-Place/Remainder-Census Tract',),
-	'140':('State-County-Census Tract',),
-	'150':('State-County-Census Tract-Block Group',),
+	'070':('Place/Remainder', 'State-County-County Subdivision-Place/Remainder',12),
+	'080':('Census Tract','State-County-County Subdivision-Place/Remainder-Census Tract',13),
+	'140':('State-County-Census Tract',13),
+	'150':('State-County-Census Tract-Block Group',14),
 	'155':('State-Place-County',),
 	'160':('State-Place',),
 	'170':('State-Consolidated City',),
@@ -124,7 +127,7 @@ def read_geo_records(reader):
 		geography['logrecno'] = row[4]
 		geography['geo_census_name'] = row[49]
 		geography['geo_name'] = clean_geo_name(row[49])
-		geography['geo_parent'] = get_parent(row[49], row[2])
+		geography['geo_parent'] = get_parent(row,geography['sumlev'])
 		yield geography
 
 
@@ -139,47 +142,49 @@ def clean_geo_name(geography_census_name):
 
 
 
-def get_parent(geography_census_name, sumlev):
+def get_parent(row, sumlev):
 
 	""" 
 		Returns the parent geography name of this geography
 		Expects:
-		geography_census_name: EX: East Providence city, Providence County, Rhode Island (as provided by Census)
+		row : the csv row
 		sumlev EX: 060
 
 		NOTE: In our case we call County Subdivision's "Municipalities". We say municipalities' parent is the 
-		State --- > {'sumlev': '040', 'logrecno': '0000001', 'geo_census_name': 'Rhode Island', 'geo_name': 'Rhode Island', 'sumlev_name': 'State'}
-		but in reality it should be a County. That being said, we have to account for that.
+		State but in reality it should be a County. That being said, we have to account for that.
+
+
 
 	"""
 	if sumlev == '060':
 		#munis
 		return 'Rhode Island'
 	elif sumlev == '140':
-		#TRACT
-		return "Place Holder"
+		#TRACT returns county and county-sub
+		return {'county':row[10], 'county-subdivision': row[11]}
+		
 	elif sumlev =='150':
-		#blockgroup 
-		parent = geography_census_name.split(',')[1]
-		return parent
+
 
 
 def sort_geographies(filename):
 	f = open(filename, 'rt',)
 	try:
 		reader = csv.reader(f)
+		reader.next()
 		for row in read_geo_records(reader):
 			# place in dictionaries
 			if row['sumlev'] == '040':
-				STATES[row['geo_census_name']] = row
+				STATES[row['logrecno']] = row
 			elif row['sumlev'] =='060':
-				MUNIS[row['geo_census_name']] = row
+				MUNIS[row['logrecno']] = row
 			elif row['sumlev'] =='140':
-				TRACTS[row['geo_census_name']] = row
+				TRACTS[row['logrecno']] = row
 			elif row['sumlev'] =='150':
-				BLOCKGROUPS[row['geo_census_name']] = row
+				BLOCKGROUPS[row['logrecno']] = row
 
 	finally:
+		# add parents
 		f.close()
 
 

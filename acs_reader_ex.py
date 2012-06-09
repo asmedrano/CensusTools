@@ -5,7 +5,7 @@ from acs_geo_file_reader import reader
 
 def main():
 	 reader.sort_geographies('census_src/g20105ri.csv')
-
+	
 	 print reader.STATES
 	 print reader.MUNIS
 	 print reader.TRACTS

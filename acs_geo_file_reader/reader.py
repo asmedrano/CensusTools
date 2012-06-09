@@ -117,7 +117,7 @@ BLOCKGROUPS = {}
 
 def read_geo_records(reader):
 	"""
-		row[49] EX: 'West Warwick town, Kent County, Rhode Island'
+		row[49] EX: 'West Warwick town, Kent County, Rhode Island
 	"""
 	
 	for row in reader:
@@ -127,7 +127,8 @@ def read_geo_records(reader):
 		geography['logrecno'] = row[4]
 		geography['geo_census_name'] = row[49]
 		geography['geo_name'] = clean_geo_name(row[49])
-		geography['geo_parent'] = get_parent(row,geography['sumlev'])
+		geography['geo_parent'] = get_parent(row[49], geography['sumlev'])
+		
 		yield geography
 
 
@@ -142,7 +143,7 @@ def clean_geo_name(geography_census_name):
 
 
 
-def get_parent(row, sumlev):
+def get_parent(geo_census_name, sumlev):
 
 	""" 
 		Returns the parent geography name of this geography
@@ -152,18 +153,18 @@ def get_parent(row, sumlev):
 
 		NOTE: In our case we call County Subdivision's "Municipalities". We say municipalities' parent is the 
 		State but in reality it should be a County. That being said, we have to account for that.
-
-
-
 	"""
 	if sumlev == '060':
 		#munis
 		return 'Rhode Island'
 	elif sumlev == '140':
 		#TRACT returns county and county-sub
-		return {'county':row[10], 'county-subdivision': row[11]}
+		return {'county':geo_census_name.split(',')[1].strip()}
+		
 		
 	elif sumlev =='150':
+		return {'tract':geo_census_name.split(',')[1].strip()}
+		
 
 
 

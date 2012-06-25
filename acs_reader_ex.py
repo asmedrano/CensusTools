@@ -1,9 +1,10 @@
 #!/usr/bin/python
 from acs_geo_file_reader import reader
-
-
+import csv
+import os
 
 def main():
+
 	 reader.sort_geographies('census_src/g20105ri.csv')
 	
 	 print reader.STATES
